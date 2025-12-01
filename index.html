@@ -1,0 +1,66 @@
+<!doctype html>
+<div class="font-medium">${p.title}</div>
+<div class="text-sm text-gray-500">₹${p.price.toFixed(2)}</div>
+</div>
+<div class="flex items-center gap-2">
+<input type="number" min="0" value="${qty}" data-id="${id}" class="w-16 p-1 border rounded qty-input" />
+<button data-id="${id}" class="text-sm text-red-500 remove-btn">Remove</button>
+</div>
+</div>
+`;
+}).join('') : '<div class="text-center text-gray-500">Cart is empty</div>';
+
+
+// attach qty + remove handlers
+document.querySelectorAll('.qty-input').forEach(inp => inp.addEventListener('change', (e)=>{
+const id = e.currentTarget.dataset.id; const v = parseInt(e.currentTarget.value) || 0; changeQty(id, v);
+}));
+document.querySelectorAll('.remove-btn').forEach(b => b.addEventListener('click', (e)=>{
+removeFromCart(e.currentTarget.dataset.id);
+}));
+
+
+const subtotal = entries.reduce((s,[id,q])=>{
+const p = PRODUCTS.find(pp=>pp.id===id);
+return s + (p.price * q);
+}, 0);
+cartSubtotal.textContent = `₹${subtotal.toFixed(2)}`;
+}
+
+
+function toggleCart(){
+const open = !cartDrawer.classList.contains('translate-x-full');
+if(open) hideCart(); else showCart();
+}
+function showCart(){ cartDrawer.classList.remove('translate-x-full'); overlay.classList.remove('opacity-0','pointer-events-none'); overlay.classList.add('opacity-100'); }
+function hideCart(){ cartDrawer.classList.add('translate-x-full'); overlay.classList.add('opacity-0'); overlay.classList.add('pointer-events-none'); }
+function hideCartAndModals(){ hideCart(); closeCheckout(); }
+
+
+// Checkout (mock)
+function openCheckout(){
+const entries = Object.entries(state.cart);
+if(entries.length===0){ alert('Cart is empty'); return; }
+// build summary
+let html = '<ul class="space-y-2 mb-3">';
+let subtotal = 0;
+for(const [id,q] of entries){ const p = PRODUCTS.find(pp=>pp.id===id); subtotal += p.price*q; html += `<li class="flex justify-between"><span>${p.title} x ${q}</span><span>₹${(p.price*q).toFixed(2)}</span></li>` }
+html += '</ul>';
+html += `<div class="flex justify-between font-semibold"> <span>Total</span> <span>₹${subtotal.toFixed(2)}</span></div>`;
+checkoutSummary.innerHTML = html;
+// show modal
+checkoutModal.classList.remove('opacity-0','pointer-events-none');
+overlay.classList.remove('opacity-0','pointer-events-none');
+overlay.classList.add('opacity-100');
+}
+function closeCheckout(){ checkoutModal.classList.add('opacity-0'); checkoutModal.classList.add('pointer-events-none'); overlay.classList.add('opacity-0'); overlay.classList.add('pointer-events-none'); }
+function confirmOrder(){
+// mock confirmation
+alert('Order placed (mock). Thank you!');
+state.cart = {}; saveCart(); updateCartUI(); closeCheckout(); hideCart();
+}
+
+
+</script>
+</body>
+</html>
